@@ -23,6 +23,10 @@ app.secret_key = os.getenv('SECRET_KEY', 'secret string')
 @app.route('/')
 @app.route('/hello')
 def hello():
+    with open('../a.txt', encoding='utf-8') as f:
+        f.write(request.path)
+        f.write('test')
+    # print(request.path, request.full_path, request.base_url, request.url)
     name = request.args.get('name')
     if name is None:
         name = request.cookies.get('name', 'Human')
@@ -207,6 +211,7 @@ def do_something():
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
+    print(ref_url.netloc)
     return test_url.scheme in ('http', 'https') and \
            ref_url.netloc == test_url.netloc
 

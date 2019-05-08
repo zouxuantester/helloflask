@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import qux with context%}
+{% block title %}观看历史{% endblock %}
+{% block content %}
+{#    <a href="{{ url_for('index') }}">&larr; Return</a>#}
+    <p>自定义上下文： {{ foo }}</p>
+    <p>全局上下文：{{ request.host_url }}{{ config.SECRET_KEY }}{{ session.logged_in }}</p>
+
+    <p>全局函数： {{ bar() }}</p>
+    <h2>{{ user.username }}</h2>
+    {%  if user.bio %}
+        <i>{{ user.bio|truncate(length=10, killwords=True, end='...')}}</i>
+    {% else %}
+        <i>This user has not provided bio</i>
+    {% endif %}
+    <h5>{{ user.username }}`s movie list ({{ movies|length }})</h5>
+    <div>{{ movies|random }}</div>
+    <div>{{ text|safe }}</div>
+    <p>{{ 2|turn_to_int }}</p>
+    {% if age is number %}
+        <p>{{ age }}</p>
+    {% else %}
+        <p>无效的年龄</p>
+    {% endif %}
+    {% if 'a' is is_same('a') %}
+        <p>success</p>
+    {% else %}
+        <p>fall</p>
+    {% endif %}
+    <ul>
+        <li>{{ movies|last }}</li>
+        {% for movie in movies %}
+            <li>{{ movie.name }}-{{ movie.year }}</li>
+        {% endfor %}
+    </ul>
+    {{ qux(5) }}
+    {% include '_banner.html' %}
+{% endblock %}

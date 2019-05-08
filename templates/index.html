@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import qux with context %}
+
+{% block title %}
+    index
+{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <style>
+        .watch_title{
+            color: red;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    {% set name='baz' %}
+    <h1>Index</h1>
+    <ul>
+        <li class="watch_title"><a href="{{ url_for('watch_list') }}">观看历史</a></li>
+        <li class="watch_title">Filter: {{ age|turn_to_int }}</li>
+        <li>Global:{{ bar() }}</li>
+        <li>Test:{% if name is is_same 'baz' %}I am baz.{% endif %}</li>
+        <li>Marco: {{ qux(amount=5) }}</li>
+    </ul>
+{% endblock %}
