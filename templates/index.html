@@ -20,6 +20,6 @@
         <li class="watch_title">Filter: {{ age|turn_to_int }}</li>
         <li>Global:{{ bar() }}</li>
         <li>Test:{% if name is is_same 'baz' %}I am baz.{% endif %}</li>
-        <li>Marco: {{ qux(amount=5) }}</li>
+        <li>Marco: {% if True -%}{{ qux(amount=5) }}{%- endif %}</li>
     </ul>
 {% endblock %}
