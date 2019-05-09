@@ -2,7 +2,7 @@ __author__ = 'zouxuan'
 __date__ = '2019/5/5 10:35 AM'
 
 
-from flask import Flask, request, make_response, json, jsonify, redirect, url_for, session, abort, render_template, Markup
+from flask import Flask, request, make_response, json, jsonify, redirect, url_for, session, abort, render_template, Markup, flash
 import click
 import os
 from urllib.parse import urlparse, urljoin
@@ -190,6 +190,22 @@ def watch_list():
     text = "<h1>这是安全的</h1>"
     age = '2312'
     return render_template('watchlist.html', user=user, movies=movies, text=text, age=age)
+
+
+@app.route('/flash')
+def just_flash():
+    flash('This is flash message')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error/404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('error/500.html'), 500
 
 
 # 自定义全局变量

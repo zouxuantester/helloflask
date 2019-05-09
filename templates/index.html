@@ -21,5 +21,6 @@
         <li>Global:{{ bar() }}</li>
         <li>Test:{% if name is is_same 'baz' %}I am baz.{% endif %}</li>
         <li>Marco: {% if True -%}{{ qux(amount=5) }}{%- endif %}</li>
+        <li><a href="{{ url_for('just_flash') }}">flash something</a></li>
     </ul>
 {% endblock %}
