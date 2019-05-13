@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import form_field with context %}
+
+{% block title %}
+    富文本编辑器
+{% endblock %}
+
+{% block content %}
+    <h1>上传富文本</h1>
+    <form action="" method="post">
+        {{ form.csrf_token }}
+        {{ form_field(form.title) }}
+        {{ form_field(form.body) }}
+        {{ form.submit }}
+    </form>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='body') }}
+{% endblock %}

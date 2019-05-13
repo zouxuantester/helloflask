@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import form_field with context %}
+
+{% block title %}
+    新建日记
+{% endblock %}
+
+{% block content %}
+    <h1>New Note</h1>
+    <form action="" method="post">
+        {{ form.csrf_token }}
+        {{ form_field(form.body) }}
+        {{ form.submit }}
+    </form>
+{% endblock %}

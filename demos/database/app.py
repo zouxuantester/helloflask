@@ -34,6 +34,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+from model import Note
 
 # handlers
 @app.shell_context_processor

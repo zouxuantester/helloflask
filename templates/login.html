@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    login
+{% endblock %}
+
+{% block content%}
+{#    <form action="" method="post">#}
+{#        <lable for="username">Username</lable>#}
+{#        <br>#}
+{#        <input type="text" name="username" placeholder="Please enter username"><br>#}
+{#        <lable for="password">Password</lable>#}
+{#        <br>#}
+{#        <input type="password" name="password" placeholder="Please enter password"><br>#}
+{#        <input type="checkbox" checked name="remember_me">#}
+{#        <lable for="remember_me"><small>Remember me</small></lable>#}
+{#        <br>#}
+{#        <input type="submit" value="Log in" name="submit">#}
+{#    </form>#}
+    <form action="" method="post">
+        {{ form.csrf_token }}
+        {{ form.username.label }}<br>{{ form.username }}<br>
+            {% for message in form.username.errors %}
+                <small class="error">{{ message }}</small><br>
+            {% endfor %}
+        {{ form.password.label }}<br>{{ form.password }}<br>
+        {% for message in form.password.errors %}
+            <small class="error">{{ message }}</small><br>
+        {% endfor %}
+        {{ form.remember }}{{ form.remember.label }}<br>
+        {{ form.submit }}<br>
+    </form>
+{% endblock %}

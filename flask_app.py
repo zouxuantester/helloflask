@@ -2,22 +2,39 @@ __author__ = 'zouxuan'
 __date__ = '2019/5/5 10:35 AM'
 
 
-from flask import Flask, request, make_response, json, jsonify, redirect, url_for, session, abort, render_template, Markup, flash
+from flask import Flask , request , make_response , json , jsonify , redirect , url_for , session , abort , \
+    render_template , Markup , flash , send_from_directory
 import click
 import os
 from urllib.parse import urlparse, urljoin
 from jinja2.utils import generate_lorem_ipsum
 from jinja2 import escape
+from forms import LoginForm, UploadForm, RichTextForm, NoteForm, EditNoteForm, DeleteForm
+from util import random_file
+from flask_ckeditor import CKEditor
+from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'zouxuan')
+app.config['WTF_I18N_ENABLED'] = False
+app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024
+app.config['UPLOAD_PATH'] = os.path.join(app.root_path, 'uploads')
+ckeditor = CKEditor(app)
+app.config['CKEDITOR_SERVE_LOCAL'] = True
+db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+import model
+from model import Note, Article, Author, Writer, Book
 
 
 @app.route('/')
 def index():
-    age = 29
-    return render_template('index.html', age=age)
+    form = DeleteForm()
+    notes = Note.query.all()
+
+    return render_template('index.html', notes=notes, form=form)
 
 
 @app.route('/hello')
@@ -88,10 +105,16 @@ def get_sec():
     return app.secret_key
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    session['logged_in'] = True
-    return redirect(url_for('say_hello'))
+    # session['logged_in'] = True
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        flash('Welcome home %s!' % username)
+        return redirect(url_for('index'))
+        pass
+    return render_template('login.html', form=form)
 
 
 @app.route('/logout')
@@ -233,6 +256,88 @@ def is_same(self, other):
     if id(self) == id(other):
         return True
     return False
+
+
+# 定义python shell上下文
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'note': Note, 'author': Author, 'article': Article, 'writer': Writer, 'book': Book}
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    form = UploadForm()
+    if form.validate_on_submit():
+        f = form.photo.data
+        filename = random_file(f.filename)
+        f.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+        flash('Upload success!!')
+        session['filenames'] = [filename]
+        return redirect(url_for('show_image'))
+    return render_template('upload.html', form=form)
+
+
+@app.route('/uploads/<path:filename>')
+def get_file(filename):
+    return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
+
+@app.route('/show_image')
+def show_image():
+    return render_template('uploaded.html')
+
+
+@app.route('/cke_view')
+def cke_view():
+    form = RichTextForm()
+    return render_template('ckeditor.html', form=form)
+
+
+@app.cli.command('init_db')
+def init_db():
+    db.create_all()
+    click.echo('Initialized database!!')
+
+
+@app.route('/new_note', methods=['GET', 'POST'])
+def new_note():
+    form = NoteForm()
+    if form.validate_on_submit():
+        note_body = form.body.data
+        note = Note(body=note_body)
+        db.session.add(note)
+        db.session.commit()
+        flash('Create Note success!!')
+        return redirect(url_for('index'))
+        pass
+    return render_template('new_note.html', form=form)
+    pass
+
+
+@app.route('/edit_note/<int:id>', methods=['POST', 'GET'])
+def edit_note(id):
+    form = EditNoteForm()
+    note = Note.query.get(id)
+    if form.validate_on_submit():
+        note.body = form.body.data
+        db.session.commit()
+        return redirect(url_for('index'))
+    form.body.data = note.body
+    return render_template('update_note.html', form=form)
+
+
+@app.route('/delete/<int:id>', methods=['POST', 'GET'])
+def delete_note(id):
+    form = DeleteForm()
+    if form.validate_on_submit():
+        note = Note.query.get(id)
+        db.session.delete(note)
+        db.session.commit()
+        flash('Delete note success!!')
+    else:
+        abort(400)
+    return redirect(url_for('index'))
+    pass
 
 
 # app.add_template_global(bar)
