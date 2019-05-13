@@ -2,8 +2,8 @@ __author__ = 'zouxuan'
 __date__ = '2019/5/5 10:35 AM'
 
 
-from flask import Flask , request , make_response , json , jsonify , redirect , url_for , session , abort , \
-    render_template , Markup , flash , send_from_directory
+from flask import Flask, request, make_response, json, jsonify, redirect, url_for, session, abort, \
+    render_template, Markup, flash, send_from_directory
 import click
 import os
 from urllib.parse import urlparse, urljoin
@@ -13,6 +13,9 @@ from forms import LoginForm, UploadForm, RichTextForm, NoteForm, EditNoteForm, D
 from util import random_file
 from flask_ckeditor import CKEditor
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+# from sqlalchemy import event
+from flask_mail import Mail
 
 
 app = Flask(__name__)
@@ -25,8 +28,10 @@ app.config['CKEDITOR_SERVE_LOCAL'] = True
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-import model
-from model import Note, Article, Author, Writer, Book
+migrate = Migrate(app, db)
+# mail = Mail(app)
+import models
+from models import Note, Article, Author, Writer, Book, Student, Teacher, Draft
 
 
 @app.route('/')
@@ -261,7 +266,8 @@ def is_same(self, other):
 # 定义python shell上下文
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'note': Note, 'author': Author, 'article': Article, 'writer': Writer, 'book': Book}
+    return {'db': db, 'note': Note, 'author': Author, 'article': Article, 'writer': Writer,
+            'book': Book, 'stu': Student, 'tea': Teacher, 'draft': Draft}
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -294,9 +300,14 @@ def cke_view():
 
 
 @app.cli.command('init_db')
-def init_db():
+@click.option('--drop', is_flag=True, help='Create after drop table...')
+def init_db(drop):
+    if drop:
+        click.confirm('This operation will delete the database, do you want to continue?', abort=True)
+        db.drop_all()
+        click.echo('Drop tables...')
     db.create_all()
-    click.echo('Initialized database!!')
+    click.echo('Initialized database...')
 
 
 @app.route('/new_note', methods=['GET', 'POST'])
@@ -339,6 +350,11 @@ def delete_note(id):
     return redirect(url_for('index'))
     pass
 
+
+# @db.event.listens_for(Draft.body, 'set', named=True)
+# def increment_edit_time(**kwargs):
+#     if kwargs['target'].edit_time is not None:
+#         kwargs['target'].edit_time += 1
 
 # app.add_template_global(bar)
 
